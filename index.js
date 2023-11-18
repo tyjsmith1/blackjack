@@ -26,10 +26,11 @@ function calculatePoints(hand) {
     }, 0);
 
     const aceCards = hand.filter(card => card.value === 'A');
-    for (let i = 0; i < aceCards.length; i++) {
-        if (totalPoints > 21) {
-            totalPoints -= 10;
-        }
+    let numAces = aceCards.length;
+
+    while (totalPoints > 21 && numAces > 0) {
+        totalPoints -= 10;
+        numAces--;
     }
 
     return totalPoints;
@@ -52,22 +53,28 @@ function initDeal(deck) {
     console.log("dealer points: " + dealerPoints)
     console.log("player points: " + playerPoints)
 
-    if (dealerPoints === 21) {
+    initDealDetermine(playerPoints,dealerPoints)
+}
+
+function initDealDetermine (player, dealer) {
+    if (dealer === 21 && player ==! 21) {
         console.log("Dealer Blackjack")
-    } else if (playerPoints === 21) {
+    } else if (player === 21 && dealer ==! 21) {
         console.log("Player Blackjack")
+    } else if (player === 21 && dealer === 21) {
+        console.log("Push")
     } else {null}
 }
 
 function dealerHit(deck) {
     while (dealerPoints < 17) {
-        debugger
         const randomCardDealer = drawCard()
         dealerHand.push(randomCardDealer)
         console.log(dealerHand)
-        dealerPoints = dealerHand.reduce((sum, card) => sum + card.points, 0)
+        dealerPoints = calculatePoints(dealerHand)
         console.log("dealer points after hit: " + dealerPoints)
     }
+    determineWinner(playerPoints, dealerPoints)
 }
 
 function playerHit(deck) {
@@ -77,33 +84,27 @@ function playerHit(deck) {
 }
 
 
-function determineWinner(player,dealer) {
-    if (dealer === player) {
-        console.log("Push")
-    } else if (dealer === 21 && player ==! 21) {
-        console.log("Dealer Wins")
-    } else if (player === 21 && dealer ==! 21) {
-        console.log("Player Blackjack")
-    } else if (player < 21 && dealer > 21) {
-        console.log("Player wins")
-    } else if (player < 21 && player > dealer) {
-        console.log("Player wins")
-    } else if (player > 21) {
-        console.log("Dealer wins")
-    } else {
-        console.log("Keep playing")
-    }
-}
+function determineWinner(player, dealer) {
+    if (dealer > 16) {
+        if (player > 21) {
+            console.log("Player busts. Dealer wins");
+        } else if (dealer > 21) {
+            console.log("Dealer busts. Player wins");
+        } else if (player === dealer) {
+            console.log("It's a push");
+        } else if (player > dealer) {
+            console.log("Player wins");
+        } else {
+            console.log("Dealer wins");
+        }
+}}
+
 
 fetch(url)
 .then(response => response.json())
 .then(initialDeck => {
     deck = [...initialDeck]
     initDeal(deck)
-
-    debugger
-    dealerHit(deck)
-    determineWinner(playerPoints, dealerPoints)
 
     playerHitButton.addEventListener("click", (e) => {
         e.preventDefault()
@@ -120,5 +121,6 @@ fetch(url)
         playerPoints = calculatePoints(playerHand)
         dealerPoints = calculatePoints(dealerHand)
         determineWinner(playerPoints, dealerPoints)
+        dealerHit(deck)
     })
 })
