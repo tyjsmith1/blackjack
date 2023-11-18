@@ -6,6 +6,7 @@ let playerPoints = null
 let playerHand = []
 let deck = []
 const playerHitButton = document.getElementById("hit")
+const playerStayButton = document.getElementById("stay")
 
 const drawCard = () => {
     const randomIndex = Math.floor(Math.random() * deck.length);
@@ -49,6 +50,15 @@ function playerHit(deck) {
     console.log("player points after hit: " + playerPoints)
 }
 
+function playerStay(deck) {
+    playerPoints = playerHand.reduce((sum, card) => sum + card.points, 0)
+    dealerPoints = dealerHand.reduce((sum, card) => sum + card.points, 0)
+    if (dealerPoints <= 21 && dealerPoints > playerPoints) {
+        console.log("Dealer wins")
+    } else {
+        console.log("Player wins")
+    }
+}
 
 fetch(url)
 .then(response => response.json())
@@ -63,5 +73,11 @@ fetch(url)
         e.preventDefault()
 
         playerHit(deck)
+    })
+
+    playerStayButton.addEventListener("click", (e) => {
+        e.preventDefault()
+
+        playerStay(deck)
     })
 })
